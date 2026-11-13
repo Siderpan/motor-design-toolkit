@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>馬達設計工作站</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7.5' fill='%231b2a3a'/%3E%3Crect x='6' y='6' width='8.5' height='8.5' rx='2' fill='%23ffffff'/%3E%3Crect x='17.5' y='6' width='8.5' height='8.5' rx='2' fill='%23e07a45'/%3E%3Crect x='6' y='17.5' width='8.5' height='8.5' rx='2' fill='%237aa0d8'/%3E%3Crect x='17.5' y='17.5' width='8.5' height='8.5' rx='2' fill='%23ffffff' fill-opacity='.35'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --sunk:#f5f7f9; --ink:#17212b; --muted:#5b6873; --line:#d6dde3; --line2:#c2ccd4;
+  --shadow:0 1px 2px rgba(20,30,40,.06),0 6px 20px rgba(20,30,40,.07);
+  --shadow-h:0 2px 4px rgba(20,30,40,.08),0 14px 36px rgba(20,30,40,.14);
+  --grid:rgba(23,33,43,.045);
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+:root[data-theme="dark"]{
+  --bg:#101519; --panel:#182026; --sunk:#141b20; --ink:#e4e9ec; --muted:#93a1ab; --line:#29343c; --line2:#38454e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  --shadow-h:0 2px 4px rgba(0,0,0,.35),0 14px 36px rgba(0,0,0,.4);
+  --grid:rgba(228,233,236,.035);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--f-body); line-height:1.6;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px; min-height:100vh;
+}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* header */
+header{padding:40px 0 8px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.brand{display:flex;gap:16px;align-items:center}
+.brand svg{width:52px;height:52px;flex:none;border-radius:12px;box-shadow:var(--shadow)}
+h1{font-size:28px;line-height:1.2;margin:0;letter-spacing:.02em}
+.sub{margin:4px 0 0;color:var(--muted);font-size:14.5px}
+.theme{
+  border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;
+  height:36px;padding:0 14px;font:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;flex:none
+}
+.theme:hover{border-color:var(--line2)}
+.theme svg{width:16px;height:16px}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:28px 0}
+.card{
+  --c:#2453c4; --c-soft:rgba(36,83,196,.10);
+  position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;
+  transition:box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--c)}
+.card:hover{box-shadow:var(--shadow-h);transform:translateY(-2px);border-color:var(--line2)}
+.card-hd{display:flex;gap:14px;align-items:center;padding:22px 22px 0}
+.icon{width:48px;height:48px;flex:none;border-radius:11px;overflow:hidden}
+.icon svg{width:100%;height:100%;display:block}
+.num{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.card h2{margin:0;font-size:19px;line-height:1.3}
+.desc{padding:12px 22px 0;margin:0;font-size:14px;color:var(--muted)}
+.io{margin:16px 22px 0;padding:12px 14px;background:var(--sunk);border:1px solid var(--line);border-radius:10px;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:6px 10px}
+.io dt{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted);padding-top:2px;text-transform:uppercase}
+.io dd{margin:0}
+.feat{list-style:none;margin:14px 22px 0;padding:0;font-size:13.5px}
+.feat li{position:relative;padding-left:16px;margin:5px 0}
+.feat li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:1.5px;background:var(--c);opacity:.85}
+.card-ft{margin-top:auto;padding:20px 22px 22px;display:flex;align-items:center;gap:10px}
+.open{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;
+  background:var(--c);color:#fff;border-radius:9px;height:40px;font-size:14.5px;font-weight:600;letter-spacing:.03em;
+}
+.open:hover{filter:brightness(1.08)}
+.open svg{width:15px;height:15px}
+.src{
+  width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;
+  border:1px solid var(--line);color:var(--muted);text-decoration:none
+}
+.src:hover{border-color:var(--line2);color:var(--ink)}
+.src svg{width:17px;height:17px}
+.meta{padding:0 22px 16px;margin-top:-8px;font-family:var(--f-mono);font-size:11px;color:var(--muted);line-height:18px;min-height:34px}
+
+footer{border-top:1px solid var(--line);padding:18px 0 36px;display:flex;justify-content:flex-end;align-items:center;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+
+/* lock */
+.lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);z-index:10;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+.lock form{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-h);padding:30px 28px 26px;text-align:center}
+.lock svg{width:56px;height:56px;border-radius:13px}
+.lock h2{margin:14px 0 4px;font-size:20px}
+.lock p{margin:0 0 20px;color:var(--muted);font-size:13.5px}
+.lock input[type=password]{width:100%;height:44px;border:1px solid var(--line2);border-radius:10px;background:var(--sunk);color:var(--ink);
+  padding:0 14px;font:inherit;font-size:15px;outline:none;letter-spacing:.06em}
+.lock input[type=password]:focus{border-color:#2453c4;box-shadow:0 0 0 3px rgba(36,83,196,.18)}
+.lock .remember{display:flex;align-items:center;gap:7px;justify-content:flex-start;margin:12px 2px 0;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+.lock button{margin-top:18px;width:100%;height:44px;border:0;border-radius:10px;background:#1b2a3a;color:#fff;font:inherit;font-size:15px;font-weight:600;letter-spacing:.08em;cursor:pointer}
+:root[data-theme="dark"] .lock button{background:#e4e9ec;color:#101519}
+.lock button:disabled{opacity:.6;cursor:wait}
+.lock .err{min-height:20px;margin:10px 0 0;color:#c0352b;font-size:13px}
+.lock.shake form{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.lockout{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;height:36px;padding:0 14px;font:inherit;font-size:13px;cursor:pointer}
+.lockout:hover{border-color:var(--line2);color:var(--ink)}
+body.locked .wrap{display:none}
+body:not(.locked) .lock{display:none}
+
+@media (max-width:960px){.grid{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){
+  .wrap{padding:0 16px} header{padding-top:24px}
+  h1{font-size:23px} .brand svg{width:44px;height:44px}
+  .grid{grid-template-columns:1fr}
+  .theme span{display:none} .theme{padding:0 10px}
+}
+</style>
+</head>
+<body class="locked">
+<div class="lock" id="lock">
+  <form id="lockForm" autocomplete="off">
+    <svg viewBox="0 0 52 52" aria-hidden="true"><rect width="52" height="52" rx="12" fill="#1b2a3a"/><rect x="10" y="10" width="14" height="14" rx="3" fill="#fff"/><rect x="28" y="10" width="14" height="14" rx="3" fill="#e07a45"/><rect x="10" y="28" width="14" height="14" rx="3" fill="#7aa0d8"/><rect x="28" y="28" width="14" height="14" rx="3" fill="#fff" fill-opacity=".35"/></svg>
+    <h2>馬達設計工作站</h2>
+    <p>請輸入密碼</p>
+    <input type="password" id="pw" aria-label="密碼" autofocus>
+    <label class="remember"><input type="checkbox" id="remember"> 在這台電腦記住我</label>
+    <button type="submit" id="unlockBtn">進入</button>
+    <div class="err" id="err"></div>
+  </form>
+</div>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <div class="brand">
+        <svg viewBox="0 0 52 52" aria-hidden="true"><rect width="52" height="52" rx="12" fill="#1b2a3a"/><rect x="10" y="10" width="14" height="14" rx="3" fill="#fff"/><rect x="28" y="10" width="14" height="14" rx="3" fill="#e07a45"/><rect x="10" y="28" width="14" height="14" rx="3" fill="#7aa0d8"/><rect x="28" y="28" width="14" height="14" rx="3" fill="#fff" fill-opacity=".35"/></svg>
+        <div>
+          <h1>馬達設計工作站</h1>
+          <p class="sub">馬達開發用的計算與模擬工具。</p>
+        </div>
+      </div>
+      <button class="theme" id="themeBtn" type="button" aria-label="切換深淺色">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <span id="themeTxt">深色</span>
+      </button>
+    </div>
+
+  </header>
+
+  <main>
+    <section class="grid" id="grid"></section>
+
+  </main>
+
+  <footer>
+    <span id="foot"></span>
+    <button class="lockout" id="lockBtn" type="button">登出</button>
+  </footer>
+</div>
+
+<script>
+let TOOLS = [];
+
+const OWNER = "Siderpan";
+const pageUrl = r => `https://${OWNER.toLowerCase()}.github.io/${r}/`;
+const repoUrl = r => `https://github.com/${OWNER}/${r}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(){
+  const dark = document.documentElement.dataset.theme === "dark";
+
+  document.getElementById("grid").innerHTML = TOOLS.map((t, i) => {
+    const c = dark ? t.colorDark : t.color;
+    return `<article class="card" style="--c:${c}">
+      <div class="card-hd">
+        <div class="icon">${t.icon}</div>
+        <div><div class="num">${String(i + 1).padStart(2, "0")} · ${esc(t.step)}</div><h2>${esc(t.name)}</h2></div>
+      </div>
+      <p class="desc">${esc(t.desc)}</p>
+      <dl class="io"><dt>輸入</dt><dd>${esc(t.input)}</dd><dt>輸出</dt><dd>${esc(t.output)}</dd></dl>
+      <ul class="feat">${t.feats.map(f => `<li>${esc(f)}</li>`).join("")}</ul>
+      <div class="card-ft">
+        <a class="open" href="${pageUrl(t.repo)}" target="_blank" rel="noopener" style="${dark ? 'color:#10161a' : ''}">開啟工具
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+        <a class="src" href="${repoUrl(t.repo)}" target="_blank" rel="noopener" title="原始碼（GitHub）" aria-label="${esc(t.name)} 原始碼">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></a>
+      </div>
+      <div class="meta" data-repo="${esc(t.repo)}"></div>
+    </article>`;
+  }).join("");
+  fillDates();
+}
+
+/* 各工具最後更新日期（取自 GitHub；取不到就留白） */
+const dates = {};
+async function loadDates(){
+  await Promise.all(TOOLS.map(async t => {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${OWNER}/${t.repo}`);
+      if (r.ok) { const j = await r.json(); dates[t.repo] = j.pushed_at; }
+    } catch (e) {}
+  }));
+  fillDates();
+}
+function fillDates(){
+  document.querySelectorAll(".meta").forEach(el => {
+    const d = dates[el.dataset.repo];
+    el.textContent = d ? "最後更新 " + new Date(d).toLocaleDateString("zh-TW", {year:"numeric", month:"2-digit", day:"2-digit"}) : "";
+  });
+}
+
+/* 深淺色 */
+function setTheme(t){
+  document.documentElement.dataset.theme = t;
+  document.getElementById("themeTxt").textContent = t === "dark" ? "淺色" : "深色";
+  try { localStorage.setItem("ws-theme", t); } catch (e) {}
+  render();
+}
+let saved = null;
+try { saved = localStorage.getItem("ws-theme"); } catch (e) {}
+document.getElementById("themeBtn").onclick = () =>
+  setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+
+/* ── 密碼鎖：內容以 AES-GCM 加密，金鑰由密碼經 PBKDF2 推導 ── */
+const VAULT = {"salt": "TKNBHJbDfPHUHGoV01tgsA==", "iv": "pZ37TdcrtjmjwIm+", "iter": 310000, "ct": "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"};
+
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const b64e = b => btoa(String.fromCharCode(...new Uint8Array(b)));
+const KEY_STORE = "ws-key";
+
+async function deriveRaw(pw){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveBits"]);
+  return crypto.subtle.deriveBits({name:"PBKDF2", hash:"SHA-256", salt:b64d(VAULT.salt), iterations:VAULT.iter}, base, 256);
+}
+async function openVault(raw){
+  const key = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64d(VAULT.iv)}, key, b64d(VAULT.ct));
+  return new Function(new TextDecoder().decode(pt))();
+}
+function show(tools){
+  TOOLS = tools;
+  document.body.classList.remove("locked");
+  document.getElementById("foot").textContent = `${TOOLS.length} 項工具`;
+  render(); loadDates();
+}
+function getStored(){
+  try { return sessionStorage.getItem(KEY_STORE) || localStorage.getItem(KEY_STORE); } catch (e) { return null; }
+}
+function store(raw, remember){
+  const v = VAULT.salt + ":" + b64e(raw);   // 換密碼後 salt 會變，舊的記憶自動失效
+  try { sessionStorage.setItem(KEY_STORE, v); if (remember) localStorage.setItem(KEY_STORE, v); } catch (e) {}
+}
+function forget(){
+  try { sessionStorage.removeItem(KEY_STORE); localStorage.removeItem(KEY_STORE); } catch (e) {}
+}
+
+document.getElementById("lockForm").onsubmit = async ev => {
+  ev.preventDefault();
+  const pw = document.getElementById("pw").value, btn = document.getElementById("unlockBtn"), err = document.getElementById("err");
+  if (!pw) return;
+  btn.disabled = true; err.textContent = "";
+  try {
+    const raw = await deriveRaw(pw);
+    const tools = await openVault(raw);
+    store(raw, document.getElementById("remember").checked);
+    document.getElementById("pw").value = "";
+    show(tools);
+  } catch (e) {
+    err.textContent = "密碼錯誤";
+    const l = document.getElementById("lock"); l.classList.remove("shake"); void l.offsetWidth; l.classList.add("shake");
+    document.getElementById("pw").select();
+  }
+  btn.disabled = false;
+};
+document.getElementById("lockBtn").onclick = () => {
+  forget(); TOOLS = []; document.getElementById("grid").innerHTML = "";
+  document.body.classList.add("locked"); document.getElementById("pw").focus();
+};
+
+(async () => {
+  const s = getStored();
+  if (s && s.startsWith(VAULT.salt + ":")) {
+    try { show(await openVault(b64d(s.slice(VAULT.salt.length + 1)))); return; } catch (e) { forget(); }
+  }
+  document.getElementById("pw").focus();
+})();
+</script>
+</body>
+</html>
